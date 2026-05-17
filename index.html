@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Wave.ly</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Wave.ly">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+:root{--pink:#ff3b6e;--orange:#ff6b35;--yellow:#ffc72c;--dark:#0d0a14;--card:#1a1428;--muted:#a78bfa;}
+body{background:#0d0a14;color:white;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:430px;margin:0 auto;min-height:100vh;position:relative;overflow-x:hidden;}
+
+/* SCREENS */
+.screen{display:none;flex-direction:column;min-height:100vh;}
+.screen.active{display:flex;}
+
+/* ONBOARDING */
+.onboard{background:#0d0a14;flex:1;display:flex;flex-direction:column;}
+.slides-wrap{flex:1;overflow:hidden;position:relative;}
+.slide{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 30px;transition:transform 0.4s cubic-bezier(.4,0,.2,1);}
+.slide-1{background:linear-gradient(135deg,#ff3b6e22,#ffc72c22);}
+.slide-2{background:linear-gradient(135deg,#7c3aed22,#ff3b6e22);}
+.slide-logo{width:100px;height:100px;background:linear-gradient(135deg,#ff3b6e,#ff6b35,#ffc72c);border-radius:28px;display:flex;align-items:center;justify-content:center;margin-bottom:32px;}
+.slide-logo svg{width:60px;height:60px;}
+.slide h1{font-size:28px;font-weight:700;text-align:center;margin-bottom:16px;background:linear-gradient(135deg,#ff3b6e,#ffc72c);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.slide p{font-size:16px;color:rgba(255,255,255,0.6);text-align:center;line-height:1.6;}
+.dots{display:flex;gap:8px;justify-content:center;padding:20px;}
+.dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.2);transition:all 0.3s;}
+.dot.active{width:24px;border-radius:4px;background:linear-gradient(90deg,#ff3b6e,#ffc72c);}
+.onboard-btn{margin:0 20px 40px;background:linear-gradient(135deg,#ff3b6e,#ff6b35);border:none;border-radius:30px;color:white;font-size:16px;font-weight:700;padding:16px;cursor:pointer;width:calc(100% - 40px);}
+
+/* AUTH */
+.auth-bg{flex:1;background:linear-gradient(180deg,#1a0a2e 0%,#0d0a14 100%);display:flex;flex-direction:column;}
+.auth-header{text-align:center;padding:60px 20px 30px;}
+.auth-logo{width:80px;height:80px;background:linear-gradient(135deg,#ff3b6e,#ff6b35,#ffc72c);border-radius:22px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;}
+.auth-title{font-size:32px;font-weight:900;background:linear-gradient(135deg,#ff3b6e,#ffc72c);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.auth-sub{font-size:14px;color:rgba(255,255,255,0.5);margin-top:4px;}
+.auth-form{flex:1;background:#0d0a14;border-radius:30px 30px 0 0;padding:30px 24px;display:flex;flex-direction:column;gap:14px;}
+.auth-form h2{font-size:20px;font-weight:700;margin-bottom:4px;}
+.auth-input{background:#1a1428;border:1.5px solid rgba(255,255,255,0.1);border-radius:14px;color:white;font-size:15px;padding:14px 16px;width:100%;outline:none;transition:border-color 0.2s;}
+.auth-input:focus{border-color:#ff3b6e;}
+.auth-input::placeholder{color:rgba(255,255,255,0.3);}
+.auth-submit{background:linear-gradient(135deg,#ff3b6e,#ff6b35);border:none;border-radius:14px;color:white;font-size:16px;font-weight:700;padding:16px;cursor:pointer;margin-top:4px;}
+.auth-switch{text-align:center;font-size:13px;color:rgba(255,255,255,0.4);cursor:pointer;}
+.auth-switch span{color:#ff3b6e;font-weight:600;}
+.auth-error{background:rgba(255,59,110,0.15);border:1px solid rgba(255,59,110,0.3);border-radius:10px;padding:10px 14px;font-size:13px;color:#ff3b6e;display:none;}
+
+/* MAIN APP */
+.main-app{flex:1;display:flex;flex-direction:column;padding-bottom:70px;}
+
+/* TOP BAR */
+.top-bar{display:flex;justify-content:center;gap:24px;padding:12px 0 8px;background:black;flex-shrink:0;}
+.top-tab{color:rgba(255,255,255,0.4);font-size:14px;font-weight:700;cursor:pointer;padding-bottom:4px;border-bottom:2px solid transparent;transition:all 0.2s;}
+.top-tab.active{color:white;border-bottom-color:white;}
+
+/* FEED */
+.feed-container{flex:1;overflow:hidden;position:relative;background:black;}
+.feed-video{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;transition:transform 0.4s cubic-bezier(.4,0,.2,1);}
+.feed-bg{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:100px;}
+.feed-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.8) 0%,transparent 50%);}
+.feed-info{position:absolute;bottom:16px;left:14px;right:70px;}
+.feed-username{font-size:15px;font-weight:800;margin-bottom:4px;}
+.feed-desc{font-size:13px;color:rgba(255,255,255,0.8);margin-bottom:6px;line-height:1.4;}
+.feed-song{font-size:12px;color:rgba(255,255,255,0.6);display:flex;align-items:center;gap:5px;}
+.feed-actions{position:absolute;right:12px;bottom:16px;display:flex;flex-direction:column;align-items:center;gap:16px;}
+.feed-action{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;}
+.feed-action svg{width:28px;height:28px;fill:white;filter:drop-shadow(0 1px 3px rgba(0,0,0,0.5));}
+.feed-action.liked svg{fill:#ff3b6e;}
+.feed-action span{font-size:11px;font-weight:700;}
+.feed-avatar-wrap{width:44px;height:44px;border-radius:50%;border:2px solid white;overflow:hidden;background:#333;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;}
+
+/* DISCOVER */
+.discover-screen{flex:1;overflow-y:auto;background:#f2f2f2;}
+.disc-header{background:linear-gradient(135deg,#ff3b6e 0%,#ff6b35 50%,#ffc72c 100%);padding:10px 14px 16px;}
+.disc-tabs{display:flex;gap:20px;margin-bottom:10px;}
+.disc-tab{color:rgba(255,255,255,0.6);font-size:14px;font-weight:700;cursor:pointer;padding-bottom:4px;}
+.disc-tab.active{color:white;border-bottom:2px solid white;}
+.disc-search{background:rgba(255,255,255,0.25);border-radius:25px;display:flex;align-items:center;gap:8px;padding:9px 14px;border:1.5px solid rgba(255,255,255,0.4);}
+.disc-search svg{width:16px;height:16px;fill:white;flex-shrink:0;}
+.disc-search input{background:none;border:none;color:white;font-size:14px;font-weight:600;outline:none;flex:1;}
+.disc-search input::placeholder{color:rgba(255,255,255,0.7);}
+.disc-content{padding:0;}
+.contest-banner{background:#2e2e2e;padding:20px;text-align:center;}
+.contest-tag{background:#e8264f;color:white;font-size:10px;font-weight:800;padding:3px 10px;border-radius:4px;display:inline-block;margin-bottom:8px;letter-spacing:1px;}
+.contest-title{color:white;font-size:20px;font-weight:900;margin-bottom:10px;}
+.contest-btn{border:2px solid white;color:white;background:transparent;border-radius:25px;padding:8px 28px;font-size:14px;font-weight:700;cursor:pointer;}
+.disc-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:12px;}
+.disc-card{background:white;border-radius:14px;padding:16px 14px;display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;transition:transform 0.15s;}
+.disc-card:active{transform:scale(0.96);}
+.disc-card-icon{font-size:30px;}
+.disc-card-label{font-size:12px;font-weight:700;color:#333;}
+.trending-label{padding:6px 16px;font-size:12px;color:#999;font-weight:600;text-align:center;}
+.trending-tag{margin:0 12px 8px;border-radius:10px;padding:12px 16px;cursor:pointer;}
+.trending-tag-text{font-size:18px;font-weight:900;}
+
+/* NOTIFICATIONS */
+.notif-screen{flex:1;overflow-y:auto;background:#0d0a14;}
+.notif-header{padding:20px 16px 12px;display:flex;align-items:center;gap:12px;}
+.notif-title{font-size:20px;font-weight:800;}
+.notif-item{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.06);cursor:pointer;}
+.notif-avatar{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.notif-text{flex:1;font-size:13px;line-height:1.5;}
+.notif-text strong{font-weight:700;}
+.notif-time{font-size:11px;color:rgba(255,255,255,0.4);}
+.notif-follow-btn{background:linear-gradient(135deg,#ff3b6e,#ff6b35);border:none;border-radius:20px;color:white;font-size:12px;font-weight:700;padding:6px 14px;cursor:pointer;flex-shrink:0;}
+.notif-icon{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;position:absolute;bottom:0;right:0;}
+
+/* PROFILE */
+.profile-screen{flex:1;overflow-y:auto;}
+.profile-header{background:linear-gradient(135deg,#ff3b6e 0%,#ffc72c 100%);padding:40px 20px 20px;text-align:center;}
+.profile-avatar{width:80px;height:80px;border-radius:50%;background:white;border:3px solid white;display:flex;align-items:center;justify-content:center;font-size:40px;margin:0 auto 12px;}
+.profile-name{font-size:20px;font-weight:900;}
+.profile-handle{font-size:13px;color:rgba(255,255,255,0.7);margin-bottom:16px;}
+.profile-stats{display:flex;justify-content:center;gap:32px;margin-bottom:16px;}
+.profile-stat-num{font-size:20px;font-weight:900;text-align:center;}
+.profile-stat-label{font-size:11px;color:rgba(255,255,255,0.7);text-align:center;}
+.profile-edit-btn{background:white;color:#ff3b6e;border:none;border-radius:25px;padding:8px 28px;font-size:14px;font-weight:800;cursor:pointer;}
+.profile-videos{display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px;}
+.profile-video{aspect-ratio:9/16;background:#222;display:flex;align-items:center;justify-content:center;font-size:32px;cursor:pointer;position:relative;}
+.profile-video-likes{position:absolute;bottom:4px;left:4px;font-size:10px;font-weight:700;color:white;}
+
+/* BOTTOM NAV */
+.bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:white;border-top:1px solid #e0e0e0;padding:8px 0 12px;display:flex;align-items:center;justify-content:space-around;z-index:100;}
+.nav-item{display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;flex:1;}
+.nav-item svg{width:24px;height:24px;fill:#ccc;transition:fill 0.2s;}
+.nav-item.active svg{fill:#333;}
+.nav-notif{position:relative;}
+.nav-notif-dot{position:absolute;top:-2px;right:-2px;width:8px;height:8px;background:#ff3b6e;border-radius:50%;border:2px solid white;}
+.nav-plus{width:50px;height:50px;background:linear-gradient(135deg,#ffc72c,#ffaa00);border-radius:50%;display:flex;align-items:center;justify-content:center;margin-top:-16px;box-shadow:0 4px 16px rgba(255,180,0,0.5);cursor:pointer;flex-shrink:0;transition:transform 0.15s;}
+.nav-plus:active{transform:scale(0.93);}
+.nav-plus svg{width:24px;height:24px;fill:white;}
+</style>
+</head>
+<body>
+
+<!-- ONBOARDING -->
+<div class="screen active" id="screen-onboard">
+  <div class="onboard">
+    <div class="slides-wrap" id="slidesWrap">
+      <div class="slide slide-1" id="slide0" style="transform:translateX(0%)">
+        <div class="slide-logo">
+          <svg viewBox="0 0 60 60" fill="none">
+            <circle cx="30" cy="30" r="28" fill="white"/>
+            <circle cx="30" cy="30" r="16" fill="#1a1a1a"/>
+            <line x1="22" y1="38" x2="38" y2="22" stroke="white" stroke-width="3.5" stroke-linecap="round"/>
+            <circle cx="36" cy="24" r="3" fill="white"/>
+          </svg>
+        </div>
+        <h1>Welcome to Wave.ly!</h1>
+        <p>The new home for short music videos. Create, share, and discover amazing content.</p>
+      </div>
+      <div class="slide slide-2" id="slide1" style="transform:translateX(100%)">
+        <div class="slide-logo">
+          <svg viewBox="0 0 60 60" fill="none">
+            <circle cx="30" cy="30" r="28" fill="white"/>
+            <circle cx="30" cy="30" r="16" fill="#1a1a1a"/>
+            <line x1="22" y1="38" x2="38" y2="22" stroke="white" stroke-width="3.5" stroke-linecap="round"/>
+            <circle cx="36" cy="24" r="3" fill="white"/>
+          </svg>
+        </div>
+        <h1>We hope you have a great time!</h1>
+        <p>Join thousands of creators and music lovers. Your stage awaits — swipe, create, and shine.</p>
+      </div>
+    </div>
+    <div class="dots">
+      <div class="dot active" id="dot0"></div>
+      <div class="dot" id="dot1"></div>
+      <div class="dot" id="dot2"></div>
+    </div>
+    <button class="onboard-btn" id="onboardBtn" onclick="nextSlide()">Continue →</button>
+  </div>
+</div>
+
+<!-- AUTH -->
+<div class="screen" id="screen-auth">
+  <div class="auth-bg">
+    <div class="auth-header">
+      <div class="auth-logo">
+        <svg viewBox="0 0 60 60" fill="none" width="50" height="50">
+          <circle cx="30" cy="30" r="28" fill="white"/>
+          <circle cx="30" cy="30" r="16" fill="#1a1a1a"/>
+          <line x1="22" y1="38" x2="38" y2="22" stroke="white" stroke-width="3.5" stroke-linecap="round"/>
+          <circle cx="36" cy="24" r="3" fill="white"/>
+        </svg>
+      </div>
+      <div class="auth-title">Wave.ly</div>
+      <div class="auth-sub">make your music videos shine</div>
+    </div>
+    <div class="auth-form">
+      <h2 id="authTitle">Sign in</h2>
+      <div class="auth-error" id="authError"></div>
+      <input class="auth-input" id="authUser" type="text" placeholder="Username">
+      <input class="auth-input" id="authEmail" type="email" placeholder="Email" style="display:none">
+      <input class="auth-input" id="authPass" type="password" placeholder="Password">
+      <button class="auth-submit" id="authBtn" onclick="doAuth()">Sign in</button>
+      <div class="auth-switch" onclick="toggleAuth()">Don't have an account? <span>Sign up</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div class="screen" id="screen-app">
+  <div class="main-app" id="mainContent">
+    <!-- FEED TAB -->
+    <div id="tab-feed" style="display:flex;flex-direction:column;flex:1;">
+      <div class="top-bar">
+        <span class="top-tab" onclick="switchFeedTab('following')">Following</span>
+        <span class="top-tab active" onclick="switchFeedTab('foryou')">For You</span>
+        <span class="top-tab" onclick="switchFeedTab('mycity')">My City</span>
+      </div>
+      <div class="feed-container" id="feedContainer">
+        <div class="feed-video" id="vid0" style="transform:translateY(0%)">
+          <div class="feed-bg" style="background:linear-gradient(135deg,#1a1a2e,#16213e)">🎵</div>
+          <div class="feed-overlay"></div>
+          <div class="feed-info">
+            <div class="feed-username">@musicstar_pl</div>
+            <div class="feed-desc">When the beat just hits different ✨ #foryou #music</div>
+            <div class="feed-song">♪ Trending Beat #1 — DJ Remix</div>
+          </div>
+          <div class="feed-actions">
+            <div class="feed-avatar-wrap">🧑</div>
+            <div class="feed-action heart-btn" onclick="toggleHeart(this)">
+              <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+              <span>24.5K</span>
+            </div>
+            <div class="feed-action">
+              <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              <span>832</span>
+            </div>
+            <div class="feed-action">
+              <svg viewBox="0 0 24 24"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13"/></svg>
+              <span>Share</span>
+            </div>
+          </div>
+        </div>
+        <div class="feed-video" id="vid1" style="transform:translateY(100%)">
+          <div class="feed-bg" style="background:linear-gradient(135deg,#2d1b69,#11998e)">🕺</div>
+          <div class="feed-overlay"></div>
+          <div class="feed-info">
+            <div class="feed-username">@danceking99</div>
+            <div class="feed-desc">New challenge! Try this move 💪 #dance #viral</div>
+            <div class="feed-song">♪ Shake It Off — Remix</div>
+          </div>
+          <div class="feed-actions">
+            <div class="feed-avatar-wrap">👧</div>
+            <div class="feed-action heart-btn" onclick="toggleHeart(this)">
+              <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+              <span>51.2K</span>
+            </div>
+            <div class="feed-action">
+              <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              <span>2.1K</span>
+            </div>
+            <div class="feed-action">
+              <svg viewBox="0 0 24 24"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13"/></svg>
+              <span>Share</span>
+            </div>
+          </div>
+        </div>
+        <div class="feed-video" id="vid2" style="transform:translateY(200%)">
+          <div class="feed-bg" style="background:linear-gradient(135deg,#f7971e,#ffd200)">🎤</div>
+          <div class="feed-overlay"></div>
+          <div class="feed-info">
+            <div class="feed-username">@singergirl_wave</div>
+            <div class="feed-desc">Summer vibes only ☀️ #summer #music #wavely</div>
+            <div class="feed-song">♪ Summer Vibes 2025</div>
+          </div>
+          <div class="feed-actions">
+            <div class="feed-avatar-wrap">👩</div>
+            <div class="feed-action heart-btn" onclick="toggleHeart(this)">
+              <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+              <span>9.8K</span>
+            </div>
+            <div class="feed-action">
+              <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              <span>445</span>
+            </div>
+            <div class="feed-action">
+              <svg viewBox="0 0 24 24"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13"/></svg>
+              <span>Share</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DISCOVER TAB -->
+    <div id="tab-discover" style="display:none;flex:1;flex-direction:column;">
+      <div class="discover-screen">
+        <div class="disc-header">
+          <div class="disc-tabs">
+            <span class="disc-tab active">discover</span>
+            <span class="disc-tab">find friends</span>
+          </div>
+          <div class="disc-search">
+            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <input type="text" placeholder="search">
+          </div>
+        </div>
+        <div class="disc-content">
+          <div class="contest-banner">
+            <div class="contest-tag">👑 contest</div>
+            <div class="contest-title">#WaveLyChallenge</div>
+            <button class="contest-btn">details</button>
+          </div>
+          <div class="disc-grid">
+            <div class="disc-card"><div class="disc-card-icon">🔥</div><div class="disc-card-label">popular now</div></div>
+            <div class="disc-card">
+              <div style="display:flex;">
+                <div style="width:26px;height:26px;border-radius:50%;background:#ffcdd2;border:2px solid white;display:flex;align-items:center;justify-content:center;font-size:12px;">😊</div>
+                <div style="width:26px;height:26px;border-radius:50%;background:#555;border:2px solid white;margin-left:-6px;display:flex;align-items:center;justify-content:center;font-size:12px;">👤</div>
+                <div style="width:26px;height:26px;border-radius:50%;background:#ddd;border:2px solid white;margin-left:-6px;display:flex;align-items:center;justify-content:center;font-size:12px;">👤</div>
+              </div>
+              <div class="disc-card-label">leaderboard</div>
+            </div>
+            <div class="disc-card"><div class="disc-card-icon">💿</div><div class="disc-card-label">song chart</div></div>
+            <div class="disc-card"><div style="font-size:24px;color:#4caf50;">⇄</div><div class="disc-card-label">shake</div></div>
+          </div>
+          <div class="trending-label">TRENDING TAGS</div>
+          <div class="trending-tag" style="background:linear-gradient(90deg,#ffc72c,#ff9f1c)"><span class="trending-tag-text" style="color:#7a4800">#wavely</span></div>
+          <div class="trending-tag" style="background:linear-gradient(90deg,#ff6b9d,#ff3b6e)"><span class="trending-tag-text" style="color:white">#foryou</span></div>
+          <div class="trending-tag" style="background:linear-gradient(90deg,#a8edea,#fed6e3)"><span class="trending-tag-text" style="color:#444">#music</span></div>
+          <div class="trending-tag" style="background:linear-gradient(90deg,#667eea,#764ba2)"><span class="trending-tag-text" style="color:white">#dance</span></div>
+          <div style="height:20px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- NOTIFICATIONS TAB -->
+    <div id="tab-notif" style="display:none;flex:1;flex-direction:column;">
+      <div class="notif-screen">
+        <div class="notif-header">
+          <div class="notif-title">Notifications</div>
+        </div>
+        <div class="notif-item">
+          <div class="notif-avatar" style="background:#ff3b6e22;position:relative;">🧑<div class="notif-icon" style="background:#ff3b6e;">❤️</div></div>
+          <div class="notif-text"><strong>@charli_vibes</strong> liked your video<br><span class="notif-time">2m ago</span></div>
+        </div>
+        <div class="notif-item">
+          <div class="notif-avatar" style="background:#7c3aed22;position:relative;">👧<div class="notif-icon" style="background:#7c3aed;">➕</div></div>
+          <div class="notif-text"><strong>@beatdrop99</strong> started following you<br><span class="notif-time">15m ago</span></div>
+          <button class="notif-follow-btn">Follow</button>
+        </div>
+        <div class="notif-item">
+          <div class="notif-avatar" style="background:#ffc72c22;position:relative;">👩<div class="notif-icon" style="background:#ffc72c;">💬</div></div>
+          <div class="notif-text"><strong>@lilbeatmaker</strong> commented: 🔥🔥 this is amazing!<br><span class="notif-time">1h ago</span></div>
+        </div>
+        <div class="notif-item">
+          <div class="notif-avatar" style="background:#ff3b6e22;position:relative;">⭐<div class="notif-icon" style="background:#ff3b6e;">🌟</div></div>
+          <div class="notif-text"><strong>@wave.ly</strong> Your video was featured!<br><span class="notif-time">3h ago</span></div>
+        </div>
+        <div class="notif-item">
+          <div class="notif-avatar" style="background:#ff3b6e22;position:relative;">🎵<div class="notif-icon" style="background:#ff3b6e;">❤️</div></div>
+          <div class="notif-text"><strong>@danceking</strong> liked your video<br><span class="notif-time">5h ago</span></div>
+        </div>
+        <div class="notif-item">
+          <div class="notif-avatar" style="background:#7c3aed22;position:relative;">💃<div class="notif-icon" style="background:#7c3aed;">➕</div></div>
+          <div class="notif-text"><strong>@music_lover</strong> started following you<br><span class="notif-time">8h ago</span></div>
+          <button class="notif-follow-btn">Follow</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROFILE TAB -->
+    <div id="tab-profile" style="display:none;flex:1;flex-direction:column;">
+      <div class="profile-screen">
+        <div class="profile-header">
+          <div class="profile-avatar" id="profileAvatar">😎</div>
+          <div class="profile-name" id="profileName">Wave.ly User</div>
+          <div class="profile-handle" id="profileHandle">@user</div>
+          <div class="profile-stats">
+            <div><div class="profile-stat-num">0</div><div class="profile-stat-label">Following</div></div>
+            <div><div class="profile-stat-num">0</div><div class="profile-stat-label">Followers</div></div>
+            <div><div class="profile-stat-num">0</div><div class="profile-stat-label">Likes</div></div>
+          </div>
+          <button class="profile-edit-btn">Edit Profile</button>
+        </div>
+        <div class="profile-videos">
+          <div class="profile-video" style="background:linear-gradient(135deg,#1a1a2e,#16213e)">🎵<div class="profile-video-likes">❤️ 24K</div></div>
+          <div class="profile-video" style="background:linear-gradient(135deg,#2d1b69,#11998e)">🕺<div class="profile-video-likes">❤️ 51K</div></div>
+          <div class="profile-video" style="background:linear-gradient(135deg,#f7971e,#ffd200)">🎤<div class="profile-video-likes">❤️ 9.8K</div></div>
+          <div class="profile-video" style="background:linear-gradient(135deg,#ff3b6e,#ff6b35)">💃<div class="profile-video-likes">❤️ 33K</div></div>
+          <div class="profile-video" style="background:linear-gradient(135deg,#43cea2,#185a9d)">🎶<div class="profile-video-likes">❤️ 7.2K</div></div>
+          <div class="profile-video" style="background:linear-gradient(135deg,#c471ed,#f64f59)">🎸<div class="profile-video-likes">❤️ 18K</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <div class="bottom-nav">
+    <div class="nav-item active" id="nav-home" onclick="switchTab('feed')">
+      <svg viewBox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    </div>
+    <div class="nav-item" id="nav-discover" onclick="switchTab('discover')">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    </div>
+    <div class="nav-plus">
+      <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </div>
+    <div class="nav-item nav-notif" id="nav-notif" onclick="switchTab('notif')">
+      <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      <div class="nav-notif-dot"></div>
+    </div>
+    <div class="nav-item" id="nav-profile" onclick="switchTab('profile')">
+      <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = 'https://wave-ly-make-your-music-video-shine.onrender.com';
+var slideIdx = 0;
+var currentVid = 0;
+var isAuthMode = 'login';
+var currentUser = null;
+
+function nextSlide() {
+  if(slideIdx < 1) {
+    slideIdx++;
+    document.getElementById('slide0').style.transform = 'translateX(-100%)';
+    document.getElementById('slide1').style.transform = 'translateX(0%)';
+    document.getElementById('dot0').classList.remove('active');
+    document.getElementById('dot1').classList.add('active');
+    document.getElementById('onboardBtn').textContent = 'Get Started →';
+  } else {
+    showScreen('auth');
+  }
+}
+
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => { s.classList.remove('active'); });
+  document.getElementById('screen-' + name).classList.add('active');
+}
+
+function toggleAuth() {
+  isAuthMode = isAuthMode === 'login' ? 'register' : 'login';
+  if(isAuthMode === 'register') {
+    document.getElementById('authTitle').textContent = 'Create account';
+    document.getElementById('authEmail').style.display = 'block';
+    document.getElementById('authBtn').textContent = 'Sign up';
+    document.querySelector('.auth-switch').innerHTML = 'Already have an account? <span>Sign in</span>';
+  } else {
+    document.getElementById('authTitle').textContent = 'Sign in';
+    document.getElementById('authEmail').style.display = 'none';
+    document.getElementById('authBtn').textContent = 'Sign in';
+    document.querySelector('.auth-switch').innerHTML = "Don't have an account? <span>Sign up</span>";
+  }
+  document.getElementById('authError').style.display = 'none';
+}
+
+async function doAuth() {
+  var username = document.getElementById('authUser').value.trim();
+  var password = document.getElementById('authPass').value;
+  var email = document.getElementById('authEmail').value.trim();
+  var errEl = document.getElementById('authError');
+  errEl.style.display = 'none';
+
+  if(!username || !password) { errEl.textContent = 'Please fill in all fields'; errEl.style.display = 'block'; return; }
+
+  var btn = document.getElementById('authBtn');
+  btn.textContent = 'Loading...';
+  btn.disabled = true;
+
+  try {
+    var endpoint = isAuthMode === 'login' ? '/api/auth/login' : '/api/auth/register';
+    var body = isAuthMode === 'login' ? {username, password} : {username, password, email};
+    var res = await fetch(API + endpoint, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      credentials: 'include',
+      body: JSON.stringify(body)
+    });
+    var data = await res.json();
+    if(res.ok) {
+      currentUser = data.user || {username};
+      document.getElementById('profileName').textContent = currentUser.display_name || currentUser.username || username;
+      document.getElementById('profileHandle').textContent = '@' + (currentUser.username || username);
+      showScreen('app');
+    } else {
+      errEl.textContent = data.error || data.message || 'Something went wrong';
+      errEl.style.display = 'block';
+    }
+  } catch(e) {
+    errEl.textContent = 'Connection error. Please try again.';
+    errEl.style.display = 'block';
+  }
+
+  btn.textContent = isAuthMode === 'login' ? 'Sign in' : 'Sign up';
+  btn.disabled = false;
+}
+
+function switchTab(tab) {
+  ['feed','discover','notif','profile'].forEach(t => {
+    var el = document.getElementById('tab-' + t);
+    if(el) el.style.display = 'none';
+  });
+  ['home','discover','notif','profile'].forEach(n => {
+    var el = document.getElementById('nav-' + n);
+    if(el) el.classList.remove('active');
+  });
+
+  var tabEl = document.getElementById('tab-' + tab);
+  if(tabEl) { tabEl.style.display = 'flex'; tabEl.style.flexDirection = 'column'; }
+
+  var navMap = {feed:'home', discover:'discover', notif:'notif', profile:'profile'};
+  var navEl = document.getElementById('nav-' + navMap[tab]);
+  if(navEl) navEl.classList.add('active');
+}
+
+function switchFeedTab(tab) {
+  document.querySelectorAll('.top-tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+}
+
+function toggleHeart(el) {
+  el.classList.toggle('liked');
+}
+
+var feedWrap = document.getElementById('feedContainer');
+var startY = 0, isDragging = false, isAnimating = false;
+
+if(feedWrap) {
+  feedWrap.addEventListener('touchstart', e => { isDragging = true; startY = e.touches[0].clientY; }, {passive:true});
+  feedWrap.addEventListener('touchend', e => {
+    if(!isDragging || isAnimating) return;
+    isDragging = false;
+    var dy = e.changedTouches[0].clientY - startY;
+    var threshold = feedWrap.offsetHeight * 0.2;
+    if(dy < -threshold && currentVid < 2) goToVid(currentVid + 1);
+    else if(dy > threshold && currentVid > 0) goToVid(currentVid - 1);
+  }, {passive:true});
+
+  feedWrap.addEventListener('wheel', e => {
+    if(isAnimating) return;
+    e.preventDefault();
+    if(e.deltaY > 30 && currentVid < 2) goToVid(currentVid + 1);
+    else if(e.deltaY < -30 && currentVid > 0) goToVid(currentVid - 1);
+  }, {passive:false});
+}
+
+function goToVid(next) {
+  isAnimating = true;
+  for(var i = 0; i <= 2; i++) {
+    var v = document.getElementById('vid' + i);
+    v.style.transition = 'transform 0.38s cubic-bezier(.4,0,.2,1)';
+    v.style.transform = 'translateY(' + ((i < next ? -1 : i > next ? 1 : 0) * 100) + '%)';
+  }
+  currentVid = next;
+  setTimeout(() => { isAnimating = false; for(var i=0;i<=2;i++) document.getElementById('vid'+i).style.transition=''; }, 400);
+}
+
+document.getElementById('authPass').addEventListener('keydown', e => { if(e.key === 'Enter') doAuth(); });
+</script>
+</body>
+</html>
