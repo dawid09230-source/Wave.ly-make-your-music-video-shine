@@ -1,0 +1,13 @@
+import * as esbuild from 'esbuild';
+
+await esbuild.build({
+  entryPoints: ['src/index.ts'],
+  bundle: true,
+  platform: 'node',
+  format: 'esm',
+  outfile: 'dist/index.mjs',
+  sourcemap: true,
+  external: ['pg', 'better-sqlite3', 'pino-pretty'],
+});
+
+console.log('Build complete');
