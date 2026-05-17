@@ -1,0 +1,1 @@
+{"version":3,"file":"videoInput.d.ts","sourceRoot":"","sources":["../../../src/generated/types/videoInput.ts"],"names":[],"mappings":"AAAA;;;;;;GAMG;AAEH,MAAM,WAAW,UAAU;IACzB,MAAM,EAAE,MAAM,CAAC;IACf,KAAK,EAAE,MAAM,CAAC;IACd,QAAQ,EAAE,MAAM,CAAC;IACjB,UAAU,EAAE,MAAM,CAAC;IACnB,QAAQ,EAAE,MAAM,CAAC;IACjB,YAAY,EAAE,MAAM,CAAC;IACrB,QAAQ,CAAC,EAAE,MAAM,EAAE,CAAC;CACrB"}
